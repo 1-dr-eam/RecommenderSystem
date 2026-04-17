@@ -1,7 +1,7 @@
 # Recommender System
 本项目复现了工业界常用的有效的推荐系统各模块，并将其整合，外部封装良好，使用简便  
 实现思路主要参考了王树森老师的b站视频，链接如下：https://www.bilibili.com/video/BV1HZ421U77y/?spm_id_from=333.1007.top_right_bar_window_history.content.click
-## Architecture
+## 🗂️ Architecture
 本推荐系统的结构与工业界常用的结构相似，即大致分为4个模块：召回、粗排、精排、重排
 ### Recall
 召回的目的是尽可能的将用户可能喜欢的物品都纳入考虑范围内，这个范围可能会很大，在工业级系统中可能会从几亿物品中召回出几千个物品  
@@ -18,7 +18,7 @@
 经过粗排和精排，我们已经对用户对物品的兴趣分数（即精排分数）做了详尽精确的刻画，而重排的目的是在最终的推荐结果中添加多样性，避免内容过于相近的内容出现在很小的一个区域  
 以小红书的场景为例，重排的目的就是避免内容非常相近的内容出现在同一个页面，用户不能同时看到这些内容。工业界的实践中发现，添加多样性可以有效提升推荐系统的大盘指标  
 本系统的重排模块主要利用MMR算法引入多样性，MMR算法中物品相似性的度量是通过提取两个物品的内容特征向量，再计算余弦相似度得到的。而物品的内容特征向量是通过分别提取物品的图文特征再进行concat得到的，这里用到的图片特征提取器和文字特征提取器来自于OpenAI团队做的一项著名工作：Clip，GitHub仓库链接如下：https://github.com/openai/CLIP
-## Version
+## 🏷️ Version
 ### v1.0
 本推荐系统的第一个版本完成于2026.3.20，主要模块及用到的模型如下：  
 召回：基于用户的协同过滤UserCF、基于物品的协同过滤ItemCF、双塔模型召回、基于关键词和分类的召回、基于内容特征的聚类召回  
@@ -58,10 +58,10 @@
 在interface/main.py中添加了微调接口，该接口可根据调用方传来的起止时间划定“新数据”的范围，此后系统内部可自动调用数据库接口查询数据并进行模型微调  
 2.补充异常处理  
 对接口和Service层函数添加了异常处理和参数校验，提升系统鲁棒性
-## Dataset
+## 📊 Dataset
 本项目所用的数据集只有一部分书籍信息是真实的，其他都是用AI工具生成的模拟的用户数据和交互记录，很大程度上只是为了模拟大数据量场景，进而做性能优化  
 这样的数据集无法用于科研等严肃领域，也不涉及隐私问题
-## Dependency
+## ⚙️ Dependency
 在运行本项目前，你需要配置合适的 Python 环境，你需要下载提供的environment.yml文件，然后在Anaconda prompt中运行：
 >conda env create -f environment.yml
 
@@ -70,14 +70,14 @@
 
 最后一步需要单独安装GPU版本的Pytorch，运行：
 >pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
-## Usage
+## 🚀 Usage
 在使用/interface中的外部接口之前，你需要先做以下准备：  
 >将main.py中的uvicorn.run函数参数修改为你自己的IP地址和端口号
 
 >将database.py中的数据库连接url修改为你自己的用户名、密码、数据库服务器IP和数据库名称（如果你使用的不是MySQL，你需要更换驱动）  
 
 修改后确定数据与我提供的csv文件或数据库格式一致（这样不容易出问题），之后运行/interface/main.py，推荐系统就会部署在你提供的IP和端口上，之后按照 [API](##API) 的要求发送请求即可
-## API
+## 🔌 API
 ### POST /recommend
 该接口基于用户ID及当前场景特征（如小时、是否周末、是否节假日）返回个性化推荐物品列表。适用于首页推荐、场景化推送等业务场景  
 
@@ -123,7 +123,7 @@
 | `status`          | string          | 微调是否成功的标识，成功为'success',失败为'error' |
 | `message`         | string          | 对应于状态的补充信息                        |
 
-## License
+## 📄 License
 
 **Code:** The source code in this repository is licensed under the **MIT License**.  
 **Weights:** The pre-trained model weights (in the `/model_weights` directory) are also licensed under the **MIT License**.
