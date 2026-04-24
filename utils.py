@@ -1,7 +1,6 @@
 from typing import List
-
+from math import pow
 import pandas as pd
-
 from entities import *
 import torch
 
@@ -74,9 +73,10 @@ def bpr_loss(pos_scores,neg_scores)->torch.Tensor:
 
 def fusion_formula(click_pred, cart_pred, forward_pred, buy_pred)->float:
     """
-    简单的融分公式
+    融分公式
     """
-    return 0.4 * click_pred + 0.1 * cart_pred + 0.3 * forward_pred + 0.2 * buy_pred
+    # return 0.4 * click_pred + 0.1 * cart_pred + 0.3 * forward_pred + 0.2 * buy_pred
+    return (click_pred**0.7)*(cart_pred**0.6)*(buy_pred**0.5)*(forward_pred**0.5)
 
 async def getItems(df_items)->List[Item]:
     """
