@@ -40,6 +40,12 @@ class DeepNetwork(nn.Module):
 
 class DCN(nn.Module):
     def __init__(self,n_layers,feature_dim,hidden_dims=[128,64]):
+        """
+        Args:
+            n_layers:交叉网络层数
+            feature_dim:输入特征维度
+            hidden_dims:MLP的隐藏层维度
+        """
         super().__init__()
         self.cross_network = CrossNetwork(n_layers,feature_dim)
         self.deep_network = DeepNetwork(feature_dim,hidden_dims)
