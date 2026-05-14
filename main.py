@@ -184,7 +184,7 @@ def main():
     """主流程"""
     recommender_system = RecommenderSystem()
     # 各模型权重路径
-    twin_towers_model_weights_path = "model_weights/twin_towers_model.pth"
+    twin_towers_model_weights_path = "model_weights/improved_twin_towers_model.pth"
     light_gcn_weights_path = "model_weights/lightgcn.pth"
     three_towers_model_weights_path = "model_weights/three_towers_model.pth"
     multi_task_model_path = "model_weights/multi_task_model.pth"

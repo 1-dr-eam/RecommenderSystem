@@ -7,6 +7,7 @@ import numpy as np
 from entities import *
 from twin_towers_model import TwoTowersModelRecommender
 from LightGCN import LightGCNRecommender
+from swing import Swing
 
 class ItemCF:
     def __init__(self):
@@ -30,30 +31,31 @@ class ItemCF:
 
         # Step 2: 计算加权共现 C[i][j] = sum_u (r_ui * r_uj)，这部分是余弦相似度的分子
         cooccur = defaultdict(lambda: defaultdict(float)) # {item_i:{item_j:sum_score}}
-        for user, item_rating_dict in self.user_items_rating.items():
-            items = list(item_rating_dict.keys())
-            n = len(items)
+        for user, item_rating_dict in self.user_items_rating.items():# {user: {item: rating}}
+            items = list(item_rating_dict.keys()) # 当前用户交互过的所有物品列表
+            n = len(items) # 数量
             for i in range(n):
-                for j in range(i + 1, n):
+                for j in range(i + 1, n):# 只遍历上三角，对称填充下三角
                     a, b = items[i], items[j]
-                    r_ua = item_rating_dict[a]
+                    r_ua = item_rating_dict[a] # user对a的rating
                     r_ub = item_rating_dict[b]
                     weight = r_ua * r_ub # 乘积
                     cooccur[a][b] += weight # 求和
                     cooccur[b][a] += weight  # 对称
 
-        # Step 3: 计算余弦相似度
+        # Step 3: 计算余弦相似度矩阵
         self.item_sim_matrix = defaultdict(dict)
-        self.item_sim = defaultdict(dict)
         for item_i, neighbors in cooccur.items():
-            for item_j, c_ij in neighbors.items():
+            for item_j, score in neighbors.items():
                 norm_i = self.item_norm_sq[item_i]
                 norm_j = self.item_norm_sq[item_j]
                 if norm_i > 0 and norm_j > 0:
-                    sim = c_ij / math.sqrt(norm_i * norm_j) # norm_i和norm_i已经是求和后的值了(这里是在做归一化)
+                    # 分子与共同受众有关，分母无论是哪个用户都无所谓
+                    sim = score / math.sqrt(norm_i * norm_j) # norm_i和norm_i已经是求和后的值了(这里是在做归一化)
                     self.item_sim_matrix[item_i][item_j] = sim
 
         # 构造关键索引2
+        self.item_sim = defaultdict(dict)
         for item,neighbors in self.item_sim_matrix.items():
             top_neighbors = nlargest(top_k, neighbors.items(), key=lambda x: x[1])
             self.item_sim[item]=dict(top_neighbors)
@@ -170,16 +172,19 @@ class CFRecommender:
     def __init__(self):
         self.user_cf=UserCF()
         self.item_cf=ItemCF()
+        self.swing=Swing()
         self.n_rec=100
 
     def fit(self, user_item_rating_list,top_k=10):
         self.user_cf.fit(user_item_rating_list,top_k)
         self.item_cf.fit(user_item_rating_list,top_k)
+        self.swing.fit(user_item_rating_list,top_k)
 
     def cf_recommend(self, user_id):
         user_cf_recalls=self.user_cf.userCF_recommend(user_id, self.n_rec)
         item_cf_recalls=self.item_cf.itemCF_recommend(user_id, self.n_rec)
-        return user_cf_recalls.union(item_cf_recalls)
+        swing_recalls=self.swing.swing_recommend(user_id, self.n_rec)
+        return user_cf_recalls | item_cf_recalls | swing_recalls
 
 class ClassificationRecommender:
     """基于类目和关键词的召回"""
