@@ -10,6 +10,7 @@ from feature_processor import FeatureProcessor
 from utils import collate_fn_two_towers
 from dataset import TwoTowerDataset
 import faiss
+from DCN import DCN
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -48,22 +49,10 @@ class TwoTowersModel(nn.Module):
         item_input_dim = embed_dim + len(item_discrete_sizes) * embed_dim + item_cont_dim
 
         # 用户塔
-        layers = []
-        prev_dim = user_input_dim
-        for h in tower_hidden:
-            layers.extend([nn.Linear(prev_dim, h), nn.ReLU()])
-            prev_dim = h
-        layers.append(nn.Linear(prev_dim, embed_dim))
-        self.user_tower = nn.Sequential(*layers)
+        self.user_tower = DCN(2,user_input_dim,[64,32])
 
         # 物品塔
-        layers = []
-        prev_dim = item_input_dim
-        for h in tower_hidden:
-            layers.extend([nn.Linear(prev_dim, h), nn.ReLU()])
-            prev_dim = h
-        layers.append(nn.Linear(prev_dim, embed_dim))
-        self.item_tower = nn.Sequential(*layers)
+        self.item_tower = DCN(2,item_input_dim,[64,32])
 
     def forward_user(self, user_ids, user_discrete, user_continuous):
         """
@@ -159,7 +148,7 @@ class TwoTowersModelRecommender:
         dataloader = DataLoader(dataset, batch_size=256, shuffle=True, collate_fn=collate_fn_two_towers)
 
         # ========== 训练循环 ==========
-        for epoch in range(20):
+        for epoch in range(10):
             model.train()
             total_loss = 0
             for batch in dataloader:
@@ -192,7 +181,7 @@ class TwoTowersModelRecommender:
         self.model = model
         self.processor = processor
         # 保存模型权重
-        torch.save(model.state_dict(),"model_weights/twin_towers_model.pth")
+        torch.save(model.state_dict(),"model_weights/improved_twin_towers_model.pth")
 
         print("twin towers model training finished")
 
