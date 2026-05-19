@@ -1,21 +1,8 @@
 import torch
 import torch.nn as nn
+from models.MLP import MLP
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-class MLP(nn.Module):
-    def __init__(self, input_dim, hidden_dims, output_dim):
-        super(MLP, self).__init__()
-        layers = []
-        prev_dim = input_dim
-        for hidden_dim in hidden_dims:
-            layers.extend([nn.Linear(prev_dim,hidden_dim),nn.ReLU()])
-            prev_dim = hidden_dim
-        layers.append(nn.Linear(prev_dim,output_dim))
-        self.mlp = nn.Sequential(*layers)
-
-    def forward(self, x):
-        return self.mlp(x)
 
 # 封装类
 class Gate(nn.Module):
